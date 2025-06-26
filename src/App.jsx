@@ -32,7 +32,8 @@ const App = () => {
 
     try {
       // Menentukan endpoint untuk mengambil daftar film yang populer
-      const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
+      const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&region=JP&with_original_language=ja&include_adult=false&certification_country=JP&certification.lte=PG-18`;
+
       const response = await fetch(endpoint, API_OPTIONS); // Melakukan permintaan ke API
 
       if (!response.ok) {
