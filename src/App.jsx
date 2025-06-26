@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Search from './components/Search';
 import Spinner from './components/Spinner';
 import MovieCard from './components/MovieCard';
+import { useDebounce } from 'react-use';
 
 // Mendefinisikan URL dasar untuk API The Movie Database (TMDB)
 const API_BASE_URL = 'https://api.themoviedb.org/3';
@@ -24,15 +25,20 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [movieList, setMovieList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
   // Fungsi untuk mengambil data film dari API
-  const fetchMovies = async () => {
+  const fetchMovies = async (query = '') => {
     setIsLoading(true);
     setErrorMessage(''); // Mengatur pesan error menjadi kosong sebelum melakukan permintaan
 
     try {
-      // Menentukan endpoint untuk mengambil daftar film yang populer
-      const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&region=JP&with_original_language=ja&include_adult=false&certification_country=JP&certification.lte=PG-18`;
+      // Menentukan endpoint untuk mengambil daftar film
+      const endpoint = query
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`
+        : `${API_BASE_URL}/discover/movie?sort_by=popularity.desc&region=JP&with_original_language=ja&include_adult=false&certification_country=JP&certification.lte=PG-18`;
 
       const response = await fetch(endpoint, API_OPTIONS); // Melakukan permintaan ke API
 
@@ -57,8 +63,8 @@ const App = () => {
 
   // Menggunakan useEffect untuk memanggil fetchMovies saat komponen pertama kali dimuat
   useEffect(() => {
-    fetchMovies();
-  }, []);
+    fetchMovies(searchTerm);
+  }, [debouncedSearchTerm]);
 
   return (
     <main>
