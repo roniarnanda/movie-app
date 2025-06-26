@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import Search from './components/Search';
-import Spinner from './components/Spinner';
-import MovieCard from './components/MovieCard';
+import Hero from './sections/Hero';
+import Trending from './sections/Trending';
+import MovieLists from './sections/MovieLists';
 import { useDebounce } from 'react-use';
-import { updateSearchCount } from './appwrite';
+import { updateSearchCount, getTrendingMovies } from './appwrite';
 
 // Mendefinisikan URL dasar untuk API The Movie Database (TMDB)
 const API_BASE_URL = 'https://api.themoviedb.org/3';
@@ -23,10 +23,13 @@ const API_OPTIONS = {
 const App = () => {
   // Mendefinisikan state untuk menyimpan istilah pencarian, pesan error, daftar film, dan status loading
   const [searchTerm, setSearchTerm] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [movieList, setMovieList] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  const [movieList, setMovieList] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [trendingMovies, setTrendingMovies] = useState([]);
 
   useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
@@ -66,41 +69,41 @@ const App = () => {
     }
   };
 
+  // Menampilkan movie yang trending
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+
+      setTrendingMovies(movies);
+    } catch (error) {
+      console.error(`Error fetching trending movies: ${error}`);
+    }
+  };
+
   // Menggunakan useEffect untuk memanggil fetchMovies saat komponen pertama kali dimuat
   useEffect(() => {
     fetchMovies(searchTerm);
   }, [debouncedSearchTerm]);
 
+  useEffect(() => {
+    loadTrendingMovies();
+  }, []);
+
   return (
     <main>
       <div className="pattern">
         <div className="wrapper">
-          <header>
-            <img src="./hero.png" alt="Hero Banner" />
-            <h1>
-              Find <span className="text-gradient">Movies</span> You'll Enjoy
-              Without the Hassle
-            </h1>
-            <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          </header>
+          <Hero searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-          <section className="all-movies">
-            <h2 className="mt-[40px]">All Movies</h2>
+          {trendingMovies.length > 0 && (
+            <Trending trendingMovies={trendingMovies} />
+          )}
 
-            {isLoading ? (
-              <Spinner />
-            ) : errorMessage ? (
-              <p className="text-red-500">{errorMessage}</p>
-            ) : (
-              <ul>
-                {movieList.map((movie) => (
-                  <MovieCard key={movie.id} movie={movie} />
-                ))}
-              </ul>
-            )}
-
-            {/* {errorMessage && <p className="text-red-500"></p>} */}
-          </section>
+          <MovieLists
+            movieList={movieList}
+            isLoading={isLoading}
+            errorMessage={errorMessage}
+          />
         </div>
       </div>
     </main>
