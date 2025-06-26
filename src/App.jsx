@@ -3,6 +3,7 @@ import Search from './components/Search';
 import Spinner from './components/Spinner';
 import MovieCard from './components/MovieCard';
 import { useDebounce } from 'react-use';
+import { updateSearchCount } from './appwrite';
 
 // Mendefinisikan URL dasar untuk API The Movie Database (TMDB)
 const API_BASE_URL = 'https://api.themoviedb.org/3';
@@ -53,6 +54,10 @@ const App = () => {
         setMovieList([]); // Mengatur daftar film menjadi kosong
       }
       setMovieList(data.results || []); // Mengatur daftar film dengan hasil yang diterima
+
+      if (query && data.results.length > 0) {
+        await updateSearchCount(query, data.results[0]);
+      }
     } catch (error) {
       console.error(`Error fetching movies: ${error}`); // Mencetak kesalahan ke konsol
       setErrorMessage('Error fetching movies, please try again later.'); // Mengatur pesan error untuk ditampilkan
