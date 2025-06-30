@@ -4,7 +4,7 @@ import Spinner from '../components/Spinner';
 
 const MovieLists = ({ movieList, isLoading, errorMessage }) => {
   // ID film yang ingin dikecualikan
-  const excludedMovieId = 1395724;
+  const excludedMovieId = '';
 
   // Filter movieList untuk mengecualikan film dengan ID tertentu
   const filteredMovies = movieList.filter(
